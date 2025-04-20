@@ -6,6 +6,11 @@ export interface TagFilter {
     active: boolean;
 }
 
+export interface TagFilterGroup {
+    requireAll: boolean;
+    tags: TagFilter[];
+}
+
 export interface FrontmatterFilter {
     property: string;
     values: string[];
@@ -13,36 +18,48 @@ export interface FrontmatterFilter {
 }
 
 export interface FileExplorerPlusPluginSettings {
-    frontmatterProps: {
-        pinned: string;
-        hidden: string;
-    };
     pinFilters: {
         active: boolean;
-        tags: TagFilter[];
+        tags: TagFilterGroup;
         frontmatter: FrontmatterFilter[];
     };
     hideFilters: {
         active: boolean;
-        tags: TagFilter[];
+        inverse: boolean;
+        tags: TagFilterGroup;
         frontmatter: FrontmatterFilter[];
     };
 }
 
 export const UNSEEN_FILES_DEFAULT_SETTINGS: FileExplorerPlusPluginSettings = {
-    frontmatterProps: {
-        pinned: "pinned",
-        hidden: "hidden",
-    },
     pinFilters: {
         active: true,
-        tags: [],
-        frontmatter: [],
+        tags: {
+            requireAll: false,
+            tags: [],
+        },
+        frontmatter: [
+            {
+                property: "pinned",
+                values: ["true"],
+                active: true,
+            },
+        ],
     },
     hideFilters: {
         active: true,
-        tags: [],
-        frontmatter: [],
+        inverse: false,
+        tags: {
+            requireAll: false,
+            tags: [],
+        },
+        frontmatter: [
+            {
+                property: "hidden",
+                values: ["true"],
+                active: true,
+            },
+        ],
     },
 };
 
@@ -55,32 +72,6 @@ export default class FileExplorerPlusSettingTab extends PluginSettingTab {
         this.containerEl.empty();
         this.containerEl.addClass("file-explorer-plus");
 
-        // Frontmatter property settings
-        this.containerEl.createEl("h2", { text: "Frontmatter Properties", attr: { class: "settings-header" } });
-
-        new Setting(this.containerEl)
-            .setName("Pinned frontmatter property")
-            .setDesc("The frontmatter property name to use for pinned files")
-            .addText((text) => {
-                text.setValue(this.plugin.settings.frontmatterProps.pinned).onChange(async (value) => {
-                    this.plugin.settings.frontmatterProps.pinned = value;
-                    await this.plugin.saveSettings();
-                    this.plugin.getFileExplorer()?.requestSort();
-                });
-            });
-
-        new Setting(this.containerEl)
-            .setName("Hidden frontmatter property")
-            .setDesc("The frontmatter property name to use for hidden files")
-            .addText((text) => {
-                text.setValue(this.plugin.settings.frontmatterProps.hidden).onChange(async (value) => {
-                    this.plugin.settings.frontmatterProps.hidden = value;
-                    await this.plugin.saveSettings();
-                    this.plugin.getFileExplorer()?.requestSort();
-                });
-            });
-
-        // Filters settings
         this.containerEl.createEl("h2", { text: "Filters", attr: { class: "settings-header" } });
 
         new Setting(this.containerEl)
@@ -111,11 +102,35 @@ export default class FileExplorerPlusSettingTab extends PluginSettingTab {
         this.addFrontmatterFilterSection("Hide", this.plugin.settings.hideFilters.frontmatter);
     }
 
-    private addTagFilterSection(type: "Pin" | "Hide", filters: TagFilter[]) {
+    private addTagFilterSection(type: "Pin" | "Hide", tagGroup: TagFilterGroup) {
         const containerEl = this.containerEl.createDiv();
         containerEl.createEl("h3", { text: `${type} Tag Filters` });
 
-        filters.forEach((filter, index) => {
+        if (type === "Hide") {
+            new Setting(containerEl)
+                .setName("Inverse hide filter")
+                .setDesc("When enabled, hide everything except files matching the filters")
+                .addToggle((toggle) =>
+                    toggle.setValue(this.plugin.settings.hideFilters.inverse).onChange(async (value) => {
+                        this.plugin.settings.hideFilters.inverse = value;
+                        await this.plugin.saveSettings();
+                        this.plugin.getFileExplorer()?.requestSort();
+                    })
+                );
+        }
+
+        new Setting(containerEl)
+            .setName("Require all tags")
+            .setDesc("When enabled, all tag filters must match. When disabled, any matching tag is sufficient.")
+            .addToggle((toggle) =>
+                toggle.setValue(tagGroup.requireAll).onChange(async (value) => {
+                    tagGroup.requireAll = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.getFileExplorer()?.requestSort();
+                })
+            );
+
+        tagGroup.tags.forEach((filter, index) => {
             new Setting(containerEl)
                 .setName(`Tag Filter ${index + 1}`)
                 .addText((text) =>
@@ -134,7 +149,7 @@ export default class FileExplorerPlusSettingTab extends PluginSettingTab {
                 )
                 .addButton((button) =>
                     button.setButtonText("Remove").onClick(async () => {
-                        filters.splice(index, 1);
+                        tagGroup.tags.splice(index, 1);
                         await this.plugin.saveSettings();
                         this.display();
                     })
@@ -143,7 +158,7 @@ export default class FileExplorerPlusSettingTab extends PluginSettingTab {
 
         new Setting(containerEl).addButton((button) =>
             button.setButtonText("Add Tag Filter").onClick(async () => {
-                filters.push({ pattern: "", active: true });
+                tagGroup.tags.push({ pattern: "", active: true });
                 await this.plugin.saveSettings();
                 this.display();
             })

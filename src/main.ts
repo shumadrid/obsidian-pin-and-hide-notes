@@ -5,7 +5,7 @@ import { addCommandsToFileMenu } from "./handlers";
 import FileExplorerPlusSettingTab, {
     FileExplorerPlusPluginSettings,
     FrontmatterFilter,
-    TagFilter,
+    TagFilterGroup,
     UNSEEN_FILES_DEFAULT_SETTINGS,
 } from "./settings";
 import { changeVirtualElementPin } from "./utils";
@@ -13,8 +13,8 @@ import { changeVirtualElementPin } from "./utils";
 export default class FileExplorerPlusPlugin extends Plugin {
     settings: FileExplorerPlusPluginSettings;
 
-    private checkTagFilter(filter: TagFilter, path: TAbstractFile): boolean {
-        if (!filter.active || !(path instanceof TFile)) {
+    private checkTagFilters(tagGroup: TagFilterGroup, path: TAbstractFile): boolean {
+        if (!(path instanceof TFile)) {
             return false;
         }
 
@@ -23,7 +23,16 @@ export default class FileExplorerPlusPlugin extends Plugin {
             return false;
         }
 
-        return cache.tags.some((tag) => tag.tag === filter.pattern);
+        const activeFilters = tagGroup.tags.filter((f) => f.active);
+        if (activeFilters.length === 0) {
+            return false;
+        }
+
+        if (tagGroup.requireAll) {
+            return activeFilters.every((filter) => cache.tags!.some((tag) => tag.tag === filter.pattern));
+        } else {
+            return activeFilters.some((filter) => cache.tags!.some((tag) => tag.tag === filter.pattern));
+        }
     }
 
     private checkFrontmatterFilter(filter: FrontmatterFilter, path: TAbstractFile): boolean {
@@ -171,31 +180,22 @@ export default class FileExplorerPlusPlugin extends Plugin {
                 return false;
             }
 
-            const cache = this.app.metadataCache.getFileCache(path);
-            if (!cache) {
+            if (!this.settings.pinFilters.active) {
                 return false;
             }
 
-            // Check frontmatter property
-            const pinnedProp = this.settings.frontmatterProps.pinned;
-            if (cache.frontmatter && cache.frontmatter[pinnedProp] === true) {
+            // Check tags
+            const tagFilterActivated = this.checkTagFilters(this.settings.pinFilters.tags, path);
+            if (tagFilterActivated) {
                 return true;
             }
 
-            if (this.settings.pinFilters.active) {
-                // Check tags
-                const tagFilterActivated = this.settings.pinFilters.tags.some((filter) => this.checkTagFilter(filter, path));
-                if (tagFilterActivated) {
-                    return true;
-                }
-
-                // Check frontmatter filters
-                const frontmatterFilterActivated = this.settings.pinFilters.frontmatter.some((filter) =>
-                    this.checkFrontmatterFilter(filter, path)
-                );
-                if (frontmatterFilterActivated) {
-                    return true;
-                }
+            // Check frontmatter filters
+            const frontmatterFilterActivated = this.settings.pinFilters.frontmatter.some((filter) =>
+                this.checkFrontmatterFilter(filter, path)
+            );
+            if (frontmatterFilterActivated) {
+                return true;
             }
 
             return false;
@@ -203,39 +203,36 @@ export default class FileExplorerPlusPlugin extends Plugin {
     }
 
     getPathsToHide(paths: (TAbstractFile | null)[]): TAbstractFile[] {
-        return paths.filter((path) => {
+        if (!this.settings.hideFilters.active) {
+            return [];
+        }
+
+        const matchingPaths = paths.filter((path) => {
             if (!path || !(path instanceof TFile)) {
                 return false;
             }
 
-            const cache = this.app.metadataCache.getFileCache(path);
-            if (!cache) {
-                return false;
-            }
-
-            // Check frontmatter property
-            const hiddenProp = this.settings.frontmatterProps.hidden;
-            if (cache.frontmatter && cache.frontmatter[hiddenProp] === true) {
+            // Check tags
+            const tagFilterActivated = this.checkTagFilters(this.settings.hideFilters.tags, path);
+            if (tagFilterActivated) {
                 return true;
             }
 
-            if (this.settings.hideFilters.active) {
-                // Check tags
-                const tagFilterActivated = this.settings.hideFilters.tags.some((filter) => this.checkTagFilter(filter, path));
-                if (tagFilterActivated) {
-                    return true;
-                }
-
-                // Check frontmatter filters
-                const frontmatterFilterActivated = this.settings.hideFilters.frontmatter.some((filter) =>
-                    this.checkFrontmatterFilter(filter, path)
-                );
-                if (frontmatterFilterActivated) {
-                    return true;
-                }
+            // Check frontmatter filters
+            const frontmatterFilterActivated = this.settings.hideFilters.frontmatter.some((filter) =>
+                this.checkFrontmatterFilter(filter, path)
+            );
+            if (frontmatterFilterActivated) {
+                return true;
             }
 
             return false;
         }) as TAbstractFile[];
+
+        if (this.settings.hideFilters.inverse) {
+            return paths.filter((path) => path instanceof TFile && !matchingPaths.includes(path)) as TAbstractFile[];
+        }
+
+        return matchingPaths;
     }
 }

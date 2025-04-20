@@ -8,52 +8,18 @@ export function addCommandsToFileMenu(plugin: FileExplorerPlusPlugin) {
                 menu.addSeparator()
                     .addItem((item) => {
                         const isPinned = plugin.getFileExplorer()!.fileItems[path.path].info.pinned;
-                        const pinnedProp = plugin.settings.frontmatterProps.pinned;
-
                         if (!isPinned) {
-                            item.setTitle("Pin File")
-                                .setIcon("pin")
-                                .onClick(() => {
-                                    plugin.app.fileManager.processFrontMatter(path, (frontmatter) => {
-                                        if (!frontmatter) frontmatter = {};
-                                        frontmatter[pinnedProp] = true;
-                                    });
-                                });
+                            item.setTitle("Pin File").setIcon("pin");
                         } else {
-                            item.setTitle("Unpin File")
-                                .setIcon("pin-off")
-                                .onClick(() => {
-                                    plugin.app.fileManager.processFrontMatter(path, (frontmatter) => {
-                                        if (frontmatter) {
-                                            delete frontmatter[pinnedProp];
-                                        }
-                                    });
-                                });
+                            item.setTitle("Unpin File").setIcon("pin-off");
                         }
                     })
                     .addItem((item) => {
                         const isHidden = plugin.getFileExplorer()!.fileItems[path.path].info.hidden;
-                        const hiddenProp = plugin.settings.frontmatterProps.hidden;
-
                         if (!isHidden) {
-                            item.setTitle("Hide File")
-                                .setIcon("eye-off")
-                                .onClick(() => {
-                                    plugin.app.fileManager.processFrontMatter(path, (frontmatter) => {
-                                        if (!frontmatter) frontmatter = {};
-                                        frontmatter[hiddenProp] = true;
-                                    });
-                                });
+                            item.setTitle("Hide File").setIcon("eye-off");
                         } else {
-                            item.setTitle("Unhide File")
-                                .setIcon("eye")
-                                .onClick(() => {
-                                    plugin.app.fileManager.processFrontMatter(path, (frontmatter) => {
-                                        if (frontmatter) {
-                                            delete frontmatter[hiddenProp];
-                                        }
-                                    });
-                                });
+                            item.setTitle("Unhide File").setIcon("eye");
                         }
                     });
             }
