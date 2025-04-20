@@ -8,6 +8,15 @@ Seems to work (or at least doesn't fail immediately) after doing some basic test
 
 Probably won't work on this project any more.
 
+To install the plugin, follow these steps:
+
+1. Make sure to have the [BRAT plugin](https://obsidian.md/plugins?id=obsidian42-brat) installed and enabled.
+2. Paste this link in your browser and press enter:
+
+   `obsidian://brat?plugin=https://github.com/shumadrid/obsidian-pin-and-hide-notes`
+
+3. An Obsidian pop-up window should appear. In the window, click the 'Add plugin' button once and wait a few seconds for the plugin to install.
+
 ### AI generated README:
 
 ⚠️ **Heads up - This is experimental stuff!**
