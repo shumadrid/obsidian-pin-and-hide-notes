@@ -1,5 +1,5 @@
 import { around } from "monkey-around";
-import { FileExplorerView, PathVirtualElement, Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
+import { FileExplorerView, parseFrontMatterTags, PathVirtualElement, Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
 
 import { addCommandsToFileMenu } from "./handlers";
 import FileExplorerPlusSettingTab, {
@@ -24,18 +24,18 @@ export default class FileExplorerPlusPlugin extends Plugin {
         }
 
         const cache = this.app.metadataCache.getFileCache(path);
-        if (!cache || !cache.tags) {
+        if (!cache || !cache.frontmatter) {
             return false;
         }
 
+        const fileTags = parseFrontMatterTags(cache.frontmatter) || [];
+
         // Check built-in tags first
-        if (this instanceof FileExplorerPlusPlugin) {
-            if (tagGroup === this.settings.pinFilters.tags && cache.tags.some((tag) => tag.tag === BUILT_IN_TAGS.PINNED)) {
-                return true;
-            }
-            if (tagGroup === this.settings.hideFilters.tags && cache.tags.some((tag) => tag.tag === BUILT_IN_TAGS.HIDDEN)) {
-                return true;
-            }
+        if (tagGroup === this.settings.pinFilters.tags && fileTags.includes(BUILT_IN_TAGS.PINNED)) {
+            return true;
+        }
+        if (tagGroup === this.settings.hideFilters.tags && fileTags.includes(BUILT_IN_TAGS.HIDDEN)) {
+            return true;
         }
 
         const activeFilters = tagGroup.tags.filter((f) => f.active);
@@ -43,16 +43,13 @@ export default class FileExplorerPlusPlugin extends Plugin {
             return false;
         }
 
+        // No need to add '#' prefix as parseFrontMatterTags already includes it
+        const filterTags = activeFilters.map((filter) => filter.pattern);
+
         if (tagGroup.requireAll) {
-            return activeFilters.every((filter) => {
-                const pattern = filter.pattern.startsWith("#") ? filter.pattern : "#" + filter.pattern;
-                return cache.tags!.some((tag) => tag.tag === pattern);
-            });
+            return filterTags.every((tag) => fileTags.some((fileTag) => fileTag.toLowerCase() === tag.toLowerCase()));
         } else {
-            return activeFilters.some((filter) => {
-                const pattern = filter.pattern.startsWith("#") ? filter.pattern : "#" + filter.pattern;
-                return cache.tags!.some((tag) => tag.tag === pattern);
-            });
+            return filterTags.some((tag) => fileTags.some((fileTag) => fileTag.toLowerCase() === tag.toLowerCase()));
         }
     }
 
