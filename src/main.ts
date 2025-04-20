@@ -29,9 +29,15 @@ export default class FileExplorerPlusPlugin extends Plugin {
         }
 
         if (tagGroup.requireAll) {
-            return activeFilters.every((filter) => cache.tags!.some((tag) => tag.tag === filter.pattern));
+            return activeFilters.every((filter) => {
+                const pattern = filter.pattern.startsWith("#") ? filter.pattern : "#" + filter.pattern;
+                return cache.tags!.some((tag) => tag.tag === pattern);
+            });
         } else {
-            return activeFilters.some((filter) => cache.tags!.some((tag) => tag.tag === filter.pattern));
+            return activeFilters.some((filter) => {
+                const pattern = filter.pattern.startsWith("#") ? filter.pattern : "#" + filter.pattern;
+                return cache.tags!.some((tag) => tag.tag === pattern);
+            });
         }
     }
 

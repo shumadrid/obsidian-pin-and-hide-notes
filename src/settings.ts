@@ -96,6 +96,17 @@ export default class FileExplorerPlusSettingTab extends PluginSettingTab {
                 });
             });
 
+        new Setting(this.containerEl)
+            .setName("Inverse hide filter")
+            .setDesc("When enabled, hide everything except files matching the filters")
+            .addToggle((toggle) =>
+                toggle.setValue(this.plugin.settings.hideFilters.inverse).onChange(async (value) => {
+                    this.plugin.settings.hideFilters.inverse = value;
+                    await this.plugin.saveSettings();
+                    this.plugin.getFileExplorer()?.requestSort();
+                })
+            );
+
         this.addTagFilterSection("Pin", this.plugin.settings.pinFilters.tags);
         this.addTagFilterSection("Hide", this.plugin.settings.hideFilters.tags);
         this.addFrontmatterFilterSection("Pin", this.plugin.settings.pinFilters.frontmatter);
@@ -105,19 +116,6 @@ export default class FileExplorerPlusSettingTab extends PluginSettingTab {
     private addTagFilterSection(type: "Pin" | "Hide", tagGroup: TagFilterGroup) {
         const containerEl = this.containerEl.createDiv();
         containerEl.createEl("h3", { text: `${type} Tag Filters` });
-
-        if (type === "Hide") {
-            new Setting(containerEl)
-                .setName("Inverse hide filter")
-                .setDesc("When enabled, hide everything except files matching the filters")
-                .addToggle((toggle) =>
-                    toggle.setValue(this.plugin.settings.hideFilters.inverse).onChange(async (value) => {
-                        this.plugin.settings.hideFilters.inverse = value;
-                        await this.plugin.saveSettings();
-                        this.plugin.getFileExplorer()?.requestSort();
-                    })
-                );
-        }
 
         new Setting(containerEl)
             .setName("Require all tags")
