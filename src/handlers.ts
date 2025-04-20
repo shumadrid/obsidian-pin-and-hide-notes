@@ -1,65 +1,28 @@
-import { TFile, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import FileExplorerPlusPlugin, { BUILT_IN_TAGS } from "./main";
 
-async function toggleTag(file: TFile, tag: string, add: boolean) {
-    const content = await file.vault.read(file);
-    let newContent: string;
+async function toggleTag(file: TFile, tag: string, add: boolean, plugin: FileExplorerPlusPlugin) {
+    const cleanTag = tag.replace("#", "").toLowerCase();
 
-    // Remove '#' from tag for frontmatter
-    const cleanTag = tag.replace("#", "");
+    await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+        // Ensure frontmatter and tags array exists
+        if (!frontmatter) frontmatter = {};
+        if (!frontmatter.tags) frontmatter.tags = [];
 
-    if (add) {
-        if (!content.includes("---\n")) {
-            // No frontmatter - add new frontmatter with tag
-            newContent = `---\ntags: [${cleanTag}]\n---\n${content}`;
-        } else {
-            const [frontmatter, ...rest] = content.split("---\n").filter((p) => p.length > 0);
-            const content = rest.join("---\n");
-
-            if (!frontmatter.includes("tags:")) {
-                // No tags field - add it
-                newContent = `---\n${frontmatter.trim()}\ntags: [${cleanTag}]\n---\n${content}`;
-            } else {
-                // Has tags - append to existing
-                const tagMatch = frontmatter.match(/tags:\s*\[(.*?)\]/);
-                if (tagMatch) {
-                    const currentTags = tagMatch[1]
-                        .split(",")
-                        .map((t) => t.trim())
-                        .filter((t) => t.length > 0);
-                    if (!currentTags.includes(cleanTag)) {
-                        currentTags.push(cleanTag);
-                    }
-                    const newFrontmatter = frontmatter.replace(/tags:\s*\[(.*?)\]/, `tags: [${currentTags.join(", ")}]`);
-                    newContent = `---\n${newFrontmatter}\n---\n${content}`;
-                } else {
-                    // Malformed tags - overwrite
-                    newContent = `---\n${frontmatter.trim()}\ntags: [${cleanTag}]\n---\n${content}`;
-                }
-            }
-        }
-    } else {
-        if (!content.includes("---\n")) {
-            return; // No frontmatter, nothing to remove
+        // Convert to array if it's not already
+        if (!Array.isArray(frontmatter.tags)) {
+            frontmatter.tags = [frontmatter.tags].filter((t) => t);
         }
 
-        const [frontmatter, ...rest] = content.split("---\n").filter((p) => p.length > 0);
-        const content = rest.join("---\n");
+        // Case-insensitive tag handling
+        const existingTags = frontmatter.tags.map((t: string) => t.toLowerCase());
 
-        const tagMatch = frontmatter.match(/tags:\s*\[(.*?)\]/);
-        if (tagMatch) {
-            const currentTags = tagMatch[1]
-                .split(",")
-                .map((t) => t.trim())
-                .filter((t) => t.length > 0 && t !== cleanTag);
-            const newFrontmatter = frontmatter.replace(/tags:\s*\[(.*?)\]/, `tags: [${currentTags.join(", ")}]`);
-            newContent = `---\n${newFrontmatter}\n---\n${content}`;
-        } else {
-            return; // No tags field, nothing to remove
+        if (add && !existingTags.includes(cleanTag)) {
+            frontmatter.tags.push(cleanTag);
+        } else if (!add) {
+            frontmatter.tags = frontmatter.tags.filter((t: string) => t.toLowerCase() !== cleanTag);
         }
-    }
-
-    await file.vault.modify(file, newContent);
+    });
 }
 
 export function addCommandsToFileMenu(plugin: FileExplorerPlusPlugin) {
@@ -73,13 +36,13 @@ export function addCommandsToFileMenu(plugin: FileExplorerPlusPlugin) {
                             item.setTitle("Pin File")
                                 .setIcon("pin")
                                 .onClick(() => {
-                                    toggleTag(path, BUILT_IN_TAGS.PINNED, true);
+                                    toggleTag(path, BUILT_IN_TAGS.PINNED, true, plugin);
                                 });
                         } else {
                             item.setTitle("Unpin File")
                                 .setIcon("pin-off")
                                 .onClick(() => {
-                                    toggleTag(path, BUILT_IN_TAGS.PINNED, false);
+                                    toggleTag(path, BUILT_IN_TAGS.PINNED, false, plugin);
                                 });
                         }
                     })
@@ -89,13 +52,13 @@ export function addCommandsToFileMenu(plugin: FileExplorerPlusPlugin) {
                             item.setTitle("Hide File")
                                 .setIcon("eye-off")
                                 .onClick(() => {
-                                    toggleTag(path, BUILT_IN_TAGS.HIDDEN, true);
+                                    toggleTag(path, BUILT_IN_TAGS.HIDDEN, true, plugin);
                                 });
                         } else {
                             item.setTitle("Unhide File")
                                 .setIcon("eye")
                                 .onClick(() => {
-                                    toggleTag(path, BUILT_IN_TAGS.HIDDEN, false);
+                                    toggleTag(path, BUILT_IN_TAGS.HIDDEN, false, plugin);
                                 });
                         }
                     });
