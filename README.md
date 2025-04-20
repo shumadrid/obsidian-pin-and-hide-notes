@@ -1,35 +1,38 @@
-# File Explorer++ Plugin for [Obsidian.md](https://obsidian.md/)
+# Fork of File Explorer++ by kelszo
 
-**File Explorer++** enhances the built-in file explorer in [Obsidian.md](https://obsidian.md/). This plugin enables users to efficiently
-hide and pin files and folders. You can utilize custom wildcard or regex filters based on file/folder names, paths, and tags. Additionally,
-a simple click in the file menu lets you hide or pin specific files or folders.
+This is a low effort 99% vibe coded fork of the File Explorer++ plugin by kelszo.
 
-<p align="center"><img src="assets/example.png" width="350"></p>
+Implemented https://github.com/kelszo/obsidian-file-explorer-plus/issues/30.
 
-## **Usage**
+Seems to work (or at least doesn't fail immediately) after doing some basic testing
 
-1. Set up filters either via the plugin settings tab in Obsidian or by right-clicking on a file/folder and choosing "Hide/Pin file".
-2. Toggle filters on/off in settings or using the `Toggle all pin/hide filters` command. For individual filters, use the
-   `Toggle pin/hide filter` command.
+Probably won't work on this any more.
 
-## **Features**
+### AI generated README:
 
--   **Flexibility in Filtering**: Hide and pin files and folders using wildcard or regex filters for names, paths, and tags.
--   **Quick Action**: Instantly hide or pin specific files and folders with a right-click.
--   **Efficiency**: Through monkey patching, the plugin only runs during Obsidian folder sorting or when a filter changes.
--   **Transparency**: View the paths hidden or pinned and understand the filter behind each.
--   **Mobile Compatibility**: This plugin supports mobile devices.
+⚠️ **Heads up - This is experimental stuff!**
 
-## **Ribbon Icon**
-If you want an icon in the ribbon sidebar, I would recommend using [Obsidian Commander](https://github.com/phibr0/obsidian-commander)
-and adding the `File Explorer++: Toggle all hide filters` command.
+-   Don't try this in your main vault without backups!
+-   I've only done minimal testing
 
-## **Feature Requests and Bug Reporting**
+## What's Different in This Fork?
 
-Though the plugin is in its initial stages, we're open to enhancement suggestions. If you encounter any bugs or have a feature in mind,
-kindly open an issue for discussion.
+I kicked out the file path and name filtering because it was unstable and unreliable (especially if you move files around or rename them). This also means you can't hide/pin folders anymore since they can't have front matter or tags.
 
-## **License**
+Instead, this version lets you:
 
-File Explorer++ is under the GNU [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.en.html) license. For more details, see the `LICENSE`
-file.
+-   Filter files using tags: pinned and hidden
+-   Use front matter properties for filtering
+-   Flip hide filters around (show only hidden files)
+
+## Known Quirks
+
+-   No folder hiding/pinning
+-   No filtering by file paths or names
+-   Might have some undiscovered issues
+
+## Want to Try It?
+
+Feel free to experiment, but seriously - backup your vault first! If you find minor bugs, let me know and I might fix them. But heads up - if there are deeper issues, I probably won't dive into major refinements since this isn't my main focus.
+
+Also feel free to build on this yourself.
