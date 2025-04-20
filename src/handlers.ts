@@ -1,7 +1,7 @@
 import { TFile } from "obsidian";
-import FileExplorerPlusPlugin, { BUILT_IN_TAGS } from "./main";
+import PinAndHideNotesPlugin, { BUILT_IN_TAGS } from "./main";
 
-async function toggleTag(file: TFile, tag: string, add: boolean, plugin: FileExplorerPlusPlugin) {
+async function toggleTag(file: TFile, tag: string, add: boolean, plugin: PinAndHideNotesPlugin) {
     const cleanTag = tag.replace("#", "").toLowerCase();
 
     await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
@@ -25,7 +25,7 @@ async function toggleTag(file: TFile, tag: string, add: boolean, plugin: FileExp
     });
 }
 
-export function addCommandsToFileMenu(plugin: FileExplorerPlusPlugin) {
+export function addCommandsToFileMenu(plugin: PinAndHideNotesPlugin) {
     plugin.registerEvent(
         plugin.app.workspace.on("file-menu", (menu, path) => {
             if (path instanceof TFile) {

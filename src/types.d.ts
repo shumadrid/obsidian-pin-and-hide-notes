@@ -1,4 +1,4 @@
-import { TAbstractFile, TFolder } from "obsidian";
+import "obsidian";
 
 // Needed to support monkey-patching of the folder sort() function
 
@@ -37,7 +37,7 @@ declare module "obsidian" {
     export interface FileExplorerView extends View {
         createFolderDom(folder: TFolder): FileExplorerFolder;
         requestSort(): void;
-        fileExplorerPlusPatched?: boolean;
+        pinAndHideNotesPluginPatched?: boolean;
 
         fileItems: {
             [key: string]: PathVirtualElement;

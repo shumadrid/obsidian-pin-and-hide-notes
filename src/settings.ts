@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import FileExplorerPlusPlugin from "./main";
+import PinAndHideNotesPlugin from "./main";
 
 export interface TagFilter {
     pattern: string;
@@ -17,7 +17,7 @@ export interface FrontmatterFilter {
     active: boolean;
 }
 
-export interface FileExplorerPlusPluginSettings {
+export interface PinAndHideNotesPluginSettings {
     pinFilters: {
         active: boolean;
         tags: TagFilterGroup;
@@ -31,7 +31,7 @@ export interface FileExplorerPlusPluginSettings {
     };
 }
 
-export const UNSEEN_FILES_DEFAULT_SETTINGS: FileExplorerPlusPluginSettings = {
+export const UNSEEN_FILES_DEFAULT_SETTINGS: PinAndHideNotesPluginSettings = {
     pinFilters: {
         active: true,
         tags: {
@@ -63,8 +63,8 @@ export const UNSEEN_FILES_DEFAULT_SETTINGS: FileExplorerPlusPluginSettings = {
     },
 };
 
-export default class FileExplorerPlusSettingTab extends PluginSettingTab {
-    constructor(app: App, private plugin: FileExplorerPlusPlugin) {
+export default class PinAndHideNotesSettingTab extends PluginSettingTab {
+    constructor(app: App, private plugin: PinAndHideNotesPlugin) {
         super(app, plugin);
     }
 

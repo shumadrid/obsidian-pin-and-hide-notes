@@ -2,9 +2,9 @@ import { around } from "monkey-around";
 import { FileExplorerView, parseFrontMatterTags, PathVirtualElement, Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
 
 import { addCommandsToFileMenu } from "./handlers";
-import FileExplorerPlusSettingTab, {
-    FileExplorerPlusPluginSettings,
+import PinAndHideNotesSettingTab, {
     FrontmatterFilter,
+    PinAndHideNotesPluginSettings,
     TagFilterGroup,
     UNSEEN_FILES_DEFAULT_SETTINGS,
 } from "./settings";
@@ -15,8 +15,8 @@ export const BUILT_IN_TAGS = {
     HIDDEN: "#hidden",
 };
 
-export default class FileExplorerPlusPlugin extends Plugin {
-    settings: FileExplorerPlusPluginSettings;
+export default class PinAndHideNotesPlugin extends Plugin {
+    settings: PinAndHideNotesPluginSettings;
 
     private checkTagFilters(tagGroup: TagFilterGroup, path: TAbstractFile): boolean {
         if (!(path instanceof TFile)) {
@@ -70,7 +70,7 @@ export default class FileExplorerPlusPlugin extends Plugin {
     async onload() {
         await this.loadSettings();
         addCommandsToFileMenu(this);
-        this.addSettingTab(new FileExplorerPlusSettingTab(this.app, this));
+        this.addSettingTab(new PinAndHideNotesSettingTab(this.app, this));
 
         this.app.workspace.onLayoutReady(() => {
             this.patchFileExplorer();
@@ -78,7 +78,7 @@ export default class FileExplorerPlusPlugin extends Plugin {
         });
 
         this.app.workspace.on("layout-change", () => {
-            if (!this.getFileExplorer()?.fileExplorerPlusPatched) {
+            if (!this.getFileExplorer()?.pinAndHideNotesPluginPatched) {
                 this.patchFileExplorer();
                 this.getFileExplorer()?.requestSort();
             }
@@ -167,7 +167,7 @@ export default class FileExplorerPlusPlugin extends Plugin {
         );
 
         leaf.detach();
-        fileExplorer.fileExplorerPlusPatched = true;
+        fileExplorer.pinAndHideNotesPluginPatched = true;
     }
 
     onunload() {
@@ -181,7 +181,7 @@ export default class FileExplorerPlusPlugin extends Plugin {
         }
 
         fileExplorer.requestSort();
-        fileExplorer.fileExplorerPlusPatched = false;
+        fileExplorer.pinAndHideNotesPluginPatched = false;
     }
 
     async loadSettings() {

@@ -1,8 +1,8 @@
 import { Modal, TFile } from "obsidian";
-import FileExplorerPlusPlugin from "src/main";
+import PinAndHideNotesPlugin from "src/main";
 
 export class PathsActivatedModal extends Modal {
-    constructor(private plugin: FileExplorerPlusPlugin, private actionType: "PIN" | "HIDE") {
+    constructor(private plugin: PinAndHideNotesPlugin, private actionType: "PIN" | "HIDE") {
         super(plugin.app);
     }
 
