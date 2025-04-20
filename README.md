@@ -6,7 +6,7 @@ Implemented https://github.com/kelszo/obsidian-file-explorer-plus/issues/30.
 
 Seems to work (or at least doesn't fail immediately) after doing some basic testing
 
-Probably won't work on this any more.
+Probably won't work on this project any more.
 
 ### AI generated README:
 
