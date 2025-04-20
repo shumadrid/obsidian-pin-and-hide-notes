@@ -10,6 +10,11 @@ import FileExplorerPlusSettingTab, {
 } from "./settings";
 import { changeVirtualElementPin } from "./utils";
 
+export const BUILT_IN_TAGS = {
+    PINNED: "#pinned",
+    HIDDEN: "#hidden",
+};
+
 export default class FileExplorerPlusPlugin extends Plugin {
     settings: FileExplorerPlusPluginSettings;
 
@@ -21,6 +26,16 @@ export default class FileExplorerPlusPlugin extends Plugin {
         const cache = this.app.metadataCache.getFileCache(path);
         if (!cache || !cache.tags) {
             return false;
+        }
+
+        // Check built-in tags first
+        if (this instanceof FileExplorerPlusPlugin) {
+            if (tagGroup === this.settings.pinFilters.tags && cache.tags.some((tag) => tag.tag === BUILT_IN_TAGS.PINNED)) {
+                return true;
+            }
+            if (tagGroup === this.settings.hideFilters.tags && cache.tags.some((tag) => tag.tag === BUILT_IN_TAGS.HIDDEN)) {
+                return true;
+            }
         }
 
         const activeFilters = tagGroup.tags.filter((f) => f.active);

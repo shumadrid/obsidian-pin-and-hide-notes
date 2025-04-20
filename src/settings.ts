@@ -117,6 +117,12 @@ export default class FileExplorerPlusSettingTab extends PluginSettingTab {
         const containerEl = this.containerEl.createDiv();
         containerEl.createEl("h3", { text: `${type} Tag Filters` });
 
+        // Add built-in tag info
+        const infoEl = containerEl.createEl("p", {
+            text: `Files with the built-in ${type === "Pin" ? "#pinned" : "#hidden"} tag will always be ${type.toLowerCase()}ed.`,
+            attr: { class: "setting-item-description" },
+        });
+
         new Setting(containerEl)
             .setName("Require all tags")
             .setDesc("When enabled, all tag filters must match. When disabled, any matching tag is sufficient.")
