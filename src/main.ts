@@ -2,7 +2,12 @@ import { around } from "monkey-around";
 import { FileExplorerView, PathVirtualElement, Plugin, TAbstractFile, TFile, WorkspaceLeaf } from "obsidian";
 
 import { addCommandsToFileMenu } from "./handlers";
-import FileExplorerPlusSettingTab, { FileExplorerPlusPluginSettings, TagFilter, UNSEEN_FILES_DEFAULT_SETTINGS } from "./settings";
+import FileExplorerPlusSettingTab, {
+    FileExplorerPlusPluginSettings,
+    FrontmatterFilter,
+    TagFilter,
+    UNSEEN_FILES_DEFAULT_SETTINGS,
+} from "./settings";
 import { changeVirtualElementPin } from "./utils";
 
 export default class FileExplorerPlusPlugin extends Plugin {
@@ -19,6 +24,20 @@ export default class FileExplorerPlusPlugin extends Plugin {
         }
 
         return cache.tags.some((tag) => tag.tag === filter.pattern);
+    }
+
+    private checkFrontmatterFilter(filter: FrontmatterFilter, path: TAbstractFile): boolean {
+        if (!filter.active || !(path instanceof TFile)) {
+            return false;
+        }
+
+        const cache = this.app.metadataCache.getFileCache(path);
+        if (!cache || !cache.frontmatter || !cache.frontmatter[filter.property]) {
+            return false;
+        }
+
+        const value = cache.frontmatter[filter.property];
+        return filter.values.includes(String(value));
     }
 
     async onload() {
@@ -163,10 +182,18 @@ export default class FileExplorerPlusPlugin extends Plugin {
                 return true;
             }
 
-            // Check tags
             if (this.settings.pinFilters.active) {
+                // Check tags
                 const tagFilterActivated = this.settings.pinFilters.tags.some((filter) => this.checkTagFilter(filter, path));
                 if (tagFilterActivated) {
+                    return true;
+                }
+
+                // Check frontmatter filters
+                const frontmatterFilterActivated = this.settings.pinFilters.frontmatter.some((filter) =>
+                    this.checkFrontmatterFilter(filter, path)
+                );
+                if (frontmatterFilterActivated) {
                     return true;
                 }
             }
@@ -192,10 +219,18 @@ export default class FileExplorerPlusPlugin extends Plugin {
                 return true;
             }
 
-            // Check tags
             if (this.settings.hideFilters.active) {
+                // Check tags
                 const tagFilterActivated = this.settings.hideFilters.tags.some((filter) => this.checkTagFilter(filter, path));
                 if (tagFilterActivated) {
+                    return true;
+                }
+
+                // Check frontmatter filters
+                const frontmatterFilterActivated = this.settings.hideFilters.frontmatter.some((filter) =>
+                    this.checkFrontmatterFilter(filter, path)
+                );
+                if (frontmatterFilterActivated) {
                     return true;
                 }
             }
