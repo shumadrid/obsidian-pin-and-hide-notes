@@ -33,13 +33,13 @@ export function addCommandsToFileMenu(plugin: PinAndHideNotesPlugin) {
                     .addItem((item) => {
                         const isPinned = plugin.getFileExplorer()!.fileItems[path.path].info.pinned;
                         if (!isPinned) {
-                            item.setTitle("Pin File")
+                            item.setTitle("PHN: Pin File")
                                 .setIcon("pin")
                                 .onClick(() => {
                                     toggleTag(path, BUILT_IN_TAGS.PINNED, true, plugin);
                                 });
                         } else {
-                            item.setTitle("Unpin File")
+                            item.setTitle("PHN: Unpin File")
                                 .setIcon("pin-off")
                                 .onClick(() => {
                                     toggleTag(path, BUILT_IN_TAGS.PINNED, false, plugin);
@@ -49,13 +49,13 @@ export function addCommandsToFileMenu(plugin: PinAndHideNotesPlugin) {
                     .addItem((item) => {
                         const isHidden = plugin.getFileExplorer()!.fileItems[path.path].info.hidden;
                         if (!isHidden) {
-                            item.setTitle("Hide File")
+                            item.setTitle("PHN: Hide File")
                                 .setIcon("eye-off")
                                 .onClick(() => {
                                     toggleTag(path, BUILT_IN_TAGS.HIDDEN, true, plugin);
                                 });
                         } else {
-                            item.setTitle("Unhide File")
+                            item.setTitle("PHN: Unhide File")
                                 .setIcon("eye")
                                 .onClick(() => {
                                     toggleTag(path, BUILT_IN_TAGS.HIDDEN, false, plugin);
